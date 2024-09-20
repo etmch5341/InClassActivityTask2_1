@@ -6,17 +6,30 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class WordCountReducer extends  Reducer<Text, IntWritable, Text, IntWritable> {
+public class WordCountReducer extends  Reducer<Text, Text, Text, Text> {
 
-   public void reduce(Text text, Iterable<IntWritable> values, Context context)
+   public void reduce(Text text, Iterable<Text> values, Context context)
            throws IOException, InterruptedException {
 	   
-       int sum = 0;
+        int totalFlights = 0; //index 0
+        float totalDelayDeparture = 0; //index 1
+        
        
-       for (IntWritable value : values) {
-           sum += value.get();
+       for(Text v : values){
+            String[] outputArr = v.toString().split(" ");
+            if(outputArr.length == 2){
+                try{
+                    int flights = Integer.parseInt(outputArr[0]);
+                    float delayTime = Float.parseFloat(outputArr[1]);
+
+                    totalFlights += flights;
+                    totalDelayDeparture += delayTime;
+                } catch (Exception e){
+                    continue;
+                }
+            }
        }
-       
-       context.write(text, new IntWritable(sum));
+       String output = totalFlights + " " + totalDelayDeparture;
+       context.write(text, new Text(output));
    }
 }
